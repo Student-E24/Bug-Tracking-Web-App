@@ -1,6 +1,8 @@
 window.UI = (() => {
   const PROJECTS_COLLAPSED_KEY = 'submission_projects_collapsed';
 
+  // Simple HTML escaping to prevent XSS in rendered content.
+  // This improves the overall security.
   function escapeHtml(value) {
     return String(value || '')
       .replace(/&/g, '&amp;')
@@ -10,6 +12,8 @@ window.UI = (() => {
       .replace(/'/g, '&#039;');
   }
 
+  // Converts a date value into a short, readable label.
+  // This keeps date formatting consistent across the app.
   function formatDate(date) {
     if (!date) return 'Not set';
     return new Date(date).toLocaleDateString('en-US', {
@@ -19,24 +23,26 @@ window.UI = (() => {
     });
   }
 
+  // Renders project links into the left sidebar navigation list.
+  // This allows users to jump directly to project-filtered issues.
   function renderSidebarProjects(projects) {
     const list = document.getElementById('sidebar-projects-list');
     if (!list) return;
 
-    list.innerHTML = projects
-      .map(project => `
+    list.innerHTML = projects.map(project => `
         <li>
           <a class="nav-link" href="issues.html?project=${encodeURIComponent(project.id)}">
             ${Projects.colorDot(project)}
             ${escapeHtml(project.name)}
           </a>
         </li>
-      `)
-      .join('');
+      `).join('');
 
     wireProjectsSectionToggle();
   }
 
+  // Adds click and keyboard behavior to collapse or expand sidebar projects.
+  // This improves navigation accessibility and remembers user preference.
   function wireProjectsSectionToggle() {
     const toggle = document.querySelector('.nav-section-title');
     const list = document.getElementById('sidebar-projects-list');
@@ -65,6 +71,8 @@ window.UI = (() => {
     toggle.dataset.bound = 'true';
   }
 
+  // Updates the sidebar project section collapsed state and toggle icon.
+  // This keeps visual state and persisted local storage value in sync.
   function setProjectsCollapsed(toggle, list, collapsed, persist) {
     list.classList.toggle('is-collapsed', collapsed);
     toggle.setAttribute('aria-expanded', String(!collapsed));
@@ -80,6 +88,8 @@ window.UI = (() => {
     }
   }
 
+  // Counts issues by status for dashboard summary cards.
+  // This provides quick progress visibility at a glance.
   function metricCounts(issues) {
     return {
       open: issues.filter(issue => issue.status === 'open').length,
@@ -89,12 +99,17 @@ window.UI = (() => {
     };
   }
 
+  // Builds a short initials label for a person avatar.
+  // This ensures a fallback avatar value is always available.
   function personInitials(person) {
     if (!person || !person.name) return '?';
     return People.initials(person.name).slice(0, 2) || '?';
   }
 
-  function renderDashboardMetrics(counts) {
+  // Renders the top dashboard metric cards from status counts.
+  // This gives users a fast overview of issue workload.
+  function renderDashboardMetrics(counts)
+   {
     return `
       <div class="metrics-grid">
         <div class="metric-card">
@@ -130,52 +145,56 @@ window.UI = (() => {
         </div>
       </div>
     `;
-  }
+    }
 
-  function renderKanbanBoard(issues) {
-    const columns = [
-      { id: 'open', title: 'Open', dot: '#60a5fa' },
-      { id: 'in-progress', title: 'In Progress', dot: '#fbd38d' },
-      { id: 'resolved', title: 'Resolved', dot: '#4ade80' },
-      { id: 'overdue', title: 'Overdue', dot: '#f87171' },
-    ];
+  // Renders the Kanban board columns and issue cards by status.
+  // This supports drag-and-drop issue tracking in the dashboard.
+  function renderKanbanBoard(issues)
+   {
+      const columns = [
+        { id: 'open', title: 'Open', dot: '#60a5fa' },
+        { id: 'in-progress', title: 'In Progress', dot: '#fbd38d' },
+        { id: 'resolved', title: 'Resolved', dot: '#4ade80' },
+        { id: 'overdue', title: 'Overdue', dot: '#f87171' },
+      ];
 
-    return `
-      <div class="kanban-board">
-        ${columns
-          .map(column => {
-            const columnIssues = issues.filter(issue => issue.status === column.id);
-            return `
-              <section class="kanban-column" data-status="${column.id}">
-                <div class="kanban-header">
-                  <div class="kanban-title">
-                    <span class="project-dot" style="background:${column.dot}"></span>
-                    ${column.title}
-                    <span class="count">${columnIssues.length}</span>
+      return `
+        <div class="kanban-board">
+          ${columns
+            .map(column => {
+              const columnIssues = issues.filter(issue => issue.status === column.id);
+              return `
+                <section class="kanban-column" data-status="${column.id}">
+                  <div class="kanban-header">
+                    <div class="kanban-title">
+                      <span class="project-dot" style="background:${column.dot}"></span>
+                      ${column.title}
+                      <span class="count">${columnIssues.length}</span>
+                    </div>
+                    <button class="btn btn-icon-only" data-action="new-issue" aria-label="New issue"><i class="ph ph-plus"></i></button>
                   </div>
-                  <button class="btn btn-icon-only" data-action="new-issue" aria-label="New issue"><i class="ph ph-plus"></i></button>
-                </div>
-                <div class="kanban-cards" data-status="${column.id}">
-                  ${columnIssues
-                    .map(issue => {
-                      const assignee = issue.assigneeId ? People.get(issue.assigneeId) : null;
-                      const project = issue.projectId ? Projects.get(issue.projectId) : null;
-                      return `
-                        <article class="issue-card" draggable="true" data-issue-id="${issue.id}" data-status="${issue.status}">
-                          <div class="issue-card-header">
-                            <span class="issue-id">${escapeHtml(issue.id)}</span>
-                          </div>
-                          <h3 class="issue-title" data-action="view" data-issue-id="${issue.id}">${escapeHtml(issue.summary)}</h3>
-                          <div class="issue-meta">
-                            ${Issues.priorityBadge(issue.priority)}
-                            <span class="issue-project">${escapeHtml(project ? project.name : 'Unassigned')}</span>
-                          </div>
-                          <div class="issue-footer">
-                            <div class="table-assignee">
-                              <div class="avatar bg-purple">${escapeHtml(personInitials(assignee))}</div>
+                  <div class="kanban-cards" data-status="${column.id}">
+                    ${columnIssues
+                      .map(issue => {
+                        const assignee = issue.assigneeId ? People.get(issue.assigneeId) : null;
+                        const project = issue.projectId ? Projects.get(issue.projectId) : null;
+                        return `
+                          <article class="issue-card" draggable="true" data-issue-id="${issue.id}" data-status="${issue.status}">
+                            <div class="issue-card-header">
+                              <span class="issue-id">${escapeHtml(issue.id)}</span>
                             </div>
-                            <div class="issue-date">${escapeHtml(formatDate(issue.targetDate))}</div>
-                            <div class="issue-comments"><i class="ph ph-chat-circle"></i>0</div>
+                            <h3 class="issue-title" data-action="view" data-issue-id="${issue.id}">${escapeHtml(issue.summary)}</h3>
+                            <div class="issue-meta">
+                              ${Issues.priorityBadge(issue.priority)}
+                              <span class="issue-project">${escapeHtml(project ? project.name : 'Unassigned')}</span>
+                            </div>
+                            <div class="issue-footer">
+                              <div class="table-assignee">
+                                <div class="avatar bg-purple">${escapeHtml(personInitials(assignee))}</div>
+                              </div>
+                              <div class="issue-date">${escapeHtml(formatDate(issue.targetDate))}</div>
+                              <div class="issue-comments"><i class="ph ph-chat-circle"></i>0</div>
+                            </div>
                           </div>
                         </article>
                       `;
@@ -190,74 +209,83 @@ window.UI = (() => {
     `;
   }
 
-  function renderDashboard(issues) {
-    const counts = metricCounts(issues);
+  // Composes the dashboard section using metrics and Kanban board views.
+  // This centralizes the main issue-tracking workspace UI.
+  function renderDashboard(issues)
+   {
+      const counts = metricCounts(issues);
 
-    return `
-      ${renderDashboardMetrics(counts)}
+      return `
+        ${renderDashboardMetrics(counts)}
 
-      <section>
-        <div class="section-header">
-          <h2>Issue Board</h2>
-          <p class="text-secondary">Drag and drop to update issue status</p>
-        </div>
-        ${renderKanbanBoard(issues)}
-      </section>
-    `;
-  }
-
-  function renderIssuesTable(issues, opts = {}) {
-    const emptyLabel = opts.emptyLabel || 'No issues available.';
-    if (!issues.length) {
-      return `<div class="empty-state">${emptyLabel}</div>`;
+        <section>
+          <div class="section-header">
+            <h2>Issue Board</h2>
+            <p class="text-secondary">Drag and drop to update issue status</p>
+          </div>
+          ${renderKanbanBoard(issues)}
+        </section>
+      `;
     }
 
-    return `
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Issue</th>
-              <th>Status</th>
-              <th>Priority</th>
-              <th>Project</th>
-              <th>Assignee</th>
-              <th>Target Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${issues
-              .map(issue => {
-                const assignee = issue.assigneeId ? People.get(issue.assigneeId) : null;
-                const project = issue.projectId ? Projects.get(issue.projectId) : null;
-                return `
-                  <tr data-issue-id="${issue.id}">
-                    <td>
-                      <div class="issue-cell">
-                        <span class="issue-id">${escapeHtml(issue.id)}</span>
-                        <a href="#" class="issue-title-link" data-action="view" data-issue-id="${issue.id}">${escapeHtml(issue.summary)}</a>
-                      </div>
-                    </td>
-                    <td>${Issues.statusBadge(issue.status)}</td>
-                    <td>${Issues.priorityBadge(issue.priority)}</td>
-                    <td>${escapeHtml(project ? project.name : 'Unassigned project')}</td>
-                    <td>${escapeHtml(assignee ? assignee.name : 'Unassigned')}</td>
-                    <td>${escapeHtml(formatDate(issue.targetDate))}</td>
-                    <td>
-                      <button class="btn btn-outline btn-sm" data-action="view" data-issue-id="${issue.id}">View</button>
-                      <button class="btn btn-primary btn-sm" data-action="edit" data-issue-id="${issue.id}">Edit</button>
-                    </td>
-                  </tr>
-                `;
-              })
-              .join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
+  // Renders the issues table with status, priority, ownership, and actions.
+  // This provides a detailed list view for issue management.
+  function renderIssuesTable(issues, opts = {})
+   {
+      const emptyLabel = opts.emptyLabel || 'No issues available.';
+      if (!issues.length)
+      {
+        return `<div class="empty-state">${emptyLabel}</div>`;
+      }
 
+      return `
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Issue</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Project</th>
+                <th>Assignee</th>
+                <th>Target Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${issues
+                .map(issue => {
+                  const assignee = issue.assigneeId ? People.get(issue.assigneeId) : null;
+                  const project = issue.projectId ? Projects.get(issue.projectId) : null;
+                  return `
+                    <tr data-issue-id="${issue.id}">
+                      <td>
+                        <div class="issue-cell">
+                          <span class="issue-id">${escapeHtml(issue.id)}</span>
+                          <a href="#" class="issue-title-link" data-action="view" data-issue-id="${issue.id}">${escapeHtml(issue.summary)}</a>
+                        </div>
+                        </td>
+                        <td>${Issues.statusBadge(issue.status)}</td>
+                        <td>${Issues.priorityBadge(issue.priority)}</td>
+                        <td>${escapeHtml(project ? project.name : 'Unassigned project')}</td>
+                        <td>${escapeHtml(assignee ? assignee.name : 'Unassigned')}</td>
+                        <td>${escapeHtml(formatDate(issue.targetDate))}</td>
+                        <td>
+                        <button class="btn btn-outline btn-sm" data-action="view" data-issue-id="${issue.id}">View</button>
+                        <button class="btn btn-primary btn-sm" data-action="edit" data-issue-id="${issue.id}">Edit</button>
+                      </td>
+                    </tr>
+                  `;
+                })
+              .join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+  // Renders project cards and linked issue counts in the projects page.
+  // This gives a quick summary of project scope and management actions.
   function renderProjects(projects, issues) {
     return `
       <section>
@@ -294,6 +322,8 @@ window.UI = (() => {
     `;
   }
 
+  // Renders team member cards with assignment and resolution stats.
+  // This helps visualize workload distribution across people.
   function renderPeople(people, issues) {
     return `
       <section>
@@ -340,6 +370,8 @@ window.UI = (() => {
     `;
   }
 
+  // Wires delete actions for project and person management buttons.
+  // This connects UI interactions to the provided page handlers.
   function wireManagementActions(root, handlers = {}) {
     root.querySelectorAll('[data-action="delete-project"]').forEach(button => {
       button.addEventListener('click', event => {
@@ -360,6 +392,8 @@ window.UI = (() => {
     });
   }
 
+  // Renders the settings form with profile defaults and notification toggle.
+  // This centralizes editable user preferences in one section.
   function renderSettings(settings, projects, people) {
     const projectOptions = projects
       .map(project => `<option value="${project.id}" ${settings.defaultProjectId === project.id ? 'selected' : ''}>${escapeHtml(project.name)}</option>`)
@@ -410,6 +444,8 @@ window.UI = (() => {
     `;
   }
 
+  // Attaches save and reset behavior for the settings form.
+  // This converts form state into payloads for app-level handlers.
   function wireSettingsActions(root, handlers = {}) {
     const form = root.querySelector('#settings-form');
     if (!form) return;
@@ -430,6 +466,8 @@ window.UI = (() => {
     }
   }
 
+  // Wires view and edit actions in issue table rows.
+  // This opens the corresponding modal based on user clicks.
   function wireIssueTableActions(root) {
     root.querySelectorAll('[data-action="view"]').forEach(button => {
       button.addEventListener('click', event => {
@@ -446,6 +484,8 @@ window.UI = (() => {
     });
   }
 
+  // Wires dashboard interactions including viewing, creation, and drag-drop.
+  // This updates issue status in real time and refreshes the UI.
   function wireDashboardActions(root) {
     let draggingIssueId = null;
 
