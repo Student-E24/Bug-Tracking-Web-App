@@ -19,7 +19,7 @@ window.app = (() => {
     notificationsEnabled: true,
   };
   //add you part here after the comment and then remove the comment.
-
+  //see here you add then you can save.
   //persn 2 add your code here. and after delete the comment.
 
   //person 3 add your code here. and after delete the comment.
