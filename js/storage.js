@@ -1,17 +1,17 @@
 // Provides a generic interface for persistent data storage using localStorage.
 const Storage = (() => {
-  function getAll(collection) {
+  function getAll(collection) { // Retrieves all items from a collection
     try {
       return JSON.parse(localStorage.getItem(collection) || '[]');
     } catch {
       return [];
     }
   }
-
+  //Retrieves a single item from a collection by its ID
   function get(collection, id) {
     return getAll(collection).find(item => item.id === id) || null;
   }
-
+  //Creates a new item in the collection with auto-generated ID and timestamps
   function create(collection, data) {
     const items = getAll(collection);
     const item = {
@@ -24,7 +24,7 @@ const Storage = (() => {
     localStorage.setItem(collection, JSON.stringify(items));
     return item;
   }
-
+  //Updates an existing item in the collection
   function update(collection, id, data) {
     const items = getAll(collection);
     const index = items.findIndex(item => item.id === id);
@@ -38,17 +38,17 @@ const Storage = (() => {
     localStorage.setItem(collection, JSON.stringify(items));
     return items[index];
   }
-
+  //Removes an item from the collection
   function remove(collection, id) {
     const items = getAll(collection).filter(item => item.id !== id);
     localStorage.setItem(collection, JSON.stringify(items));
     return true;
   }
-
+  //Completely removes an entire collection from localStorage
   function clear(collection) {
     localStorage.removeItem(collection);
   }
-
+  //Queries a collection with a custom predicate function
   function query(collection, predicate) {
     return getAll(collection).filter(predicate);
   }

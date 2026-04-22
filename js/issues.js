@@ -1,6 +1,5 @@
-/**
- * issues.js - Issue domain logic for submission app.
- */
+//Issue domain logic for submission app.
+
 const Issues = (() => {
   const COLLECTION = 'issues';
 
@@ -25,15 +24,15 @@ const Issues = (() => {
   ];
   function getAll() {
     return Storage.getAll(COLLECTION);
-  }
+  }//Retrieves all issues from storage
 
   function get(id) {
     return Storage.get(COLLECTION, id);
-  }
+  }//Retrieves a single issue by its ID
 
   function create(data) {
     return Storage.create(COLLECTION, normalizeIssueInput(data));
-  }
+  }//Creates a new issue with normalized data
 
   function update(id, data) {
     const normalized = normalizeIssueInput(data, true);
@@ -43,23 +42,23 @@ const Issues = (() => {
     }
     return saved;
   }
-
+  //Removes an issue from storage
   function remove(id) {
     return Storage.remove(COLLECTION, id);
   }
-
+  //Retrieves all issues with a specific status
   function byStatus(status) {
     return Storage.query(COLLECTION, issue => issue.status === status);
   }
-
+  //Retrieves all issues associated with a specific project
   function byProject(projectId) {
     return Storage.query(COLLECTION, issue => issue.projectId === projectId);
   }
-
+  //Retrieves all issues assigned to a specific person
   function byAssignee(assigneeId) {
     return Storage.query(COLLECTION, issue => issue.assigneeId === assigneeId);
   }
-
+  //Searches issues by text in multiple fields (summary, description, steps, results, tags)
   function search(term) {
     const value = (term || '').trim().toLowerCase();
     if (!value) return getAll();
@@ -72,7 +71,7 @@ const Issues = (() => {
       (issue.tags || []).some(tag => String(tag).toLowerCase().includes(value))
     );
   }
-
+//Checks and updates overdue issues
   function checkOverdue() {
     const today = todayDate();
     getAll().forEach(issue => {
@@ -86,29 +85,29 @@ const Issues = (() => {
       }
     });
   }
-
+  //Retrieves metadata for a status ID
   function statusMeta(id) {
     return STATUSES.find(item => item.id === id) || STATUSES[0];
   }
-
+  //Retrieves metadata for a priority ID
   function priorityMeta(id) {
     return PRIORITIES.find(item => item.id === id) || PRIORITIES[1];
   }
-
+  //Retrieves metadata for a type ID
   function typeMeta(id) {
     return TYPES.find(item => item.id === id) || TYPES[0];
   }
-
+  //Generates HTML badge for issue status
   function statusBadge(status) {
     const meta = statusMeta(status);
     return `<span class="badge status-badge ${meta.colorClass}">${meta.label}</span>`;
   }
-
+  //Generates HTML badge for issue priority  
   function priorityBadge(priority) {
     const meta = priorityMeta(priority);
     return `<span class="badge priority-badge ${meta.colorClass}">${meta.label}</span>`;
   }
-
+  //Normalizes issue input data for consistent storage
   function normalizeIssueInput(data, isUpdate = false) {
     // For partial updates (e.g. drag-drop only sends {status}), only normalize
     // the fields that are actually present in data. This prevents missing fields
@@ -136,7 +135,7 @@ const Issues = (() => {
       }
       return partial;
     }
-
+  // Full creation - provide defaults for all fields
     return {
       summary: (data.summary || '').trim(),
       description: (data.description || '').trim(),
@@ -157,7 +156,7 @@ const Issues = (() => {
         : String(data.tags || '').split(',').map(tag => tag.trim()).filter(Boolean),
     };
   }
-
+  //Returns today's date in YYYY-MM-DD format
   function todayDate() {
     return new Date().toISOString().split('T')[0];
   }
