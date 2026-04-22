@@ -30,7 +30,7 @@ window.app = (() => {
 
     if (!Auth.requireAuth()) return;
 
-    Seed.run();
+    Storage.ensureCollections(['issues', 'people', 'projects']);
     Issues.checkOverdue();
 
     applySettingsToSidebar();
