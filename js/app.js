@@ -151,9 +151,9 @@ window.app = (() => {
   
    /*=========================================
    * Issue filters and filter panel behavior
-   * =========================================*/
-  
-// Get filters from storage
+   * =========================================
+   */
+
   function getFilters() {
     try {
       const raw = localStorage.getItem(FILTERS_KEY);
