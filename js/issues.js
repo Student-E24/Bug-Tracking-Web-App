@@ -110,7 +110,34 @@ const Issues = (() => {
   }
 
   function normalizeIssueInput(data, isUpdate = false) {
-    const normalized = {
+    // For partial updates (e.g. drag-drop only sends {status}), only normalize
+    // the fields that are actually present in data. This prevents missing fields
+    // from defaulting to '' and overwriting stored values like assigneeId.
+    if (isUpdate) {
+      const partial = {};
+      if ('summary' in data)           partial.summary = (data.summary || '').trim();
+      if ('description' in data)       partial.description = (data.description || '').trim();
+      if ('stepsToReproduce' in data)  partial.stepsToReproduce = (data.stepsToReproduce || '').trim();
+      if ('expectedResult' in data)    partial.expectedResult = (data.expectedResult || '').trim();
+      if ('actualResult' in data)      partial.actualResult = (data.actualResult || '').trim();
+      if ('identifiedDate' in data)    partial.identifiedDate = data.identifiedDate || todayDate();
+      if ('targetDate' in data)        partial.targetDate = data.targetDate || '';
+      if ('actualDate' in data)        partial.actualDate = data.actualDate || '';
+      if ('resolutionSummary' in data) partial.resolutionSummary = (data.resolutionSummary || '').trim();
+      if ('status' in data)            partial.status = data.status || 'open';
+      if ('priority' in data)          partial.priority = data.priority || 'medium';
+      if ('type' in data)              partial.type = data.type || 'bug';
+      if ('projectId' in data)         partial.projectId = data.projectId || '';
+      if ('assigneeId' in data)        partial.assigneeId = data.assigneeId || '';
+      if ('tags' in data) {
+        partial.tags = Array.isArray(data.tags)
+          ? data.tags
+          : String(data.tags || '').split(',').map(tag => tag.trim()).filter(Boolean);
+      }
+      return partial;
+    }
+
+    return {
       summary: (data.summary || '').trim(),
       description: (data.description || '').trim(),
       stepsToReproduce: (data.stepsToReproduce || '').trim(),
@@ -127,17 +154,8 @@ const Issues = (() => {
       assigneeId: data.assigneeId || '',
       tags: Array.isArray(data.tags)
         ? data.tags
-        : String(data.tags || '')
-            .split(',')
-            .map(tag => tag.trim())
-            .filter(Boolean),
+        : String(data.tags || '').split(',').map(tag => tag.trim()).filter(Boolean),
     };
-
-    if (!isUpdate) {
-      return normalized;
-    }
-
-    return Object.fromEntries(Object.entries(normalized).filter(([, value]) => value !== undefined));
   }
 
   function todayDate() {
