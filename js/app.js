@@ -494,19 +494,19 @@ window.app = (() => {
     trigger.dataset.bound = 'true';
     renderNotificationsPanel();
   }
-
+// This function just calls another function - unnecessary
   function wireNotificationsCenter() {
     InitializeNotificationsCenter();
   }
-
+//Retrieves the current user settings from storage
   function getSettings() {
     return loadUserSettings();
   }
-
+//Saves the provided settings to persistent storage
   function saveSettings(nextSettings) {
     return StoreUserSettings(nextSettings);
   }
-
+//Creates and displays a notification message to the user
   function notify(message, type = 'success') {
     if (!getSettings().notificationsEnabled) return;
 
@@ -515,7 +515,7 @@ window.app = (() => {
     saveNotifications(next);
     renderNotificationsPanel();
   }
-
+// Renders the main application page based on the current active page
   function renderPage(searchTerm = '') {
     const view = document.getElementById('view-container');
     if (!view) return;
@@ -645,7 +645,7 @@ window.app = (() => {
       });
     }
   }
-
+//Refreshes the entire application state and re-renders the current view
   function refresh() {
     Issues.checkOverdue();
     renderPage(document.getElementById('search-input')?.value || '');
