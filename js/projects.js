@@ -1,6 +1,6 @@
-/**
- * projects.js – Project logic
- */
+
+// projects.js – Project logic
+
 const Projects = (() => {
   const COLLECTION = 'projects';
 
