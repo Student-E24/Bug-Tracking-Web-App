@@ -13,7 +13,7 @@ window.app = (() => {
   };
   const DEFAULT_SETTINGS = {
     displayName: 'Admin User',
-    email: 'submission@bugtrack.io',
+    email: 'submission@easytracker.fun',
     defaultProjectId: '',
     defaultAssigneeId: '',
     notificationsEnabled: true,
@@ -292,11 +292,11 @@ window.app = (() => {
       });
     }
   }
-    // Sets up the filter panel toggle behavior and click-outside-to-close functionality
+  // Sets up the filter panel toggle behavior and click-outside-to-close functionality
   function setupFilterPanel() {
     const { trigger, panel } = ensureFilterPanel();
     if (!trigger || !panel) return;
-    
+
     if (trigger.dataset.bound === 'true') {
       renderFilterPanel();
       return;
@@ -321,13 +321,13 @@ window.app = (() => {
     setupFilterPanel();
   }
 
-    /*
-   * =========================================
-   * Settings, notifications, rendering, refresh
-   * =========================================
-   */
+  /*
+ * =========================================
+ * Settings, notifications, rendering, refresh
+ * =========================================
+ */
 
-// Retrieves user settings from localStorage with fallback defaults
+  // Retrieves user settings from localStorage with fallback defaults
   function loadUserSettings() {
     try {
       const raw = localStorage.getItem(SETTINGS_KEY);
@@ -341,7 +341,7 @@ window.app = (() => {
       return { ...DEFAULT_SETTINGS };
     }
   }
-// Saves user settings to localStorage
+  // Saves user settings to localStorage
   function StoreUserSettings(nextSettings) {
     const merged = {
       ...DEFAULT_SETTINGS,
@@ -351,7 +351,7 @@ window.app = (() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
     return merged;
   }
-// Updates sidebar UI elements with current user settings (name, email, avatar)
+  // Updates sidebar UI elements with current user settings (name, email, avatar)
   function applySettingsToSidebar() {
     const settings = getSettings();
 
@@ -371,7 +371,7 @@ window.app = (() => {
       avatarEl.textContent = initials;
     }
   }
-// Fetches notification list from localStorage
+  // Fetches notification list from localStorage
   function getNotifications() {
     try {
       const raw = localStorage.getItem(NOTIFICATIONS_KEY);
@@ -381,11 +381,11 @@ window.app = (() => {
       return [];
     }
   }
-// Saves notifications to localStorage (limited to MAX_NOTIFICATIONS)
+  // Saves notifications to localStorage (limited to MAX_NOTIFICATIONS)
   function saveNotifications(items) {
     localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(items.slice(0, MAX_NOTIFICATIONS)));
   }
-// Converts ISO timestamp to readable time format (e.g., "2:30 PM")
+  // Converts ISO timestamp to readable time format (e.g., "2:30 PM")
   function formatTime(isoTime) {
     const date = new Date(isoTime);
     if (Number.isNaN(date.getTime())) return 'Just now';
@@ -395,13 +395,13 @@ window.app = (() => {
       minute: '2-digit',
     });
   }
-// Returns appropriate icon class based on notification type
+  // Returns appropriate icon class based on notification type
   function iconForType(type) {
     if (type === 'error') return 'ph-warning-circle';
     if (type === 'info') return 'ph-info';
     return 'ph-check-circle';
   }
-// Creates or retrieves the notifications panel DOM elements
+  // Creates or retrieves the notifications panel DOM elements
   function setupNotificationsPanel() {
     const trigger = document.getElementById('btn-notifications');
     if (!trigger) return { trigger: null, panel: null, badge: null };
@@ -424,7 +424,7 @@ window.app = (() => {
   function ensureNotificationsPanel() {
     return setupNotificationsPanel();
   }
-// Renders the notifications panel UI with the current notifications
+  // Renders the notifications panel UI with the current notifications
   function renderNotificationsPanel() {
     const { panel, badge } = ensureNotificationsPanel();
     if (!panel || !badge) return;
@@ -432,7 +432,7 @@ window.app = (() => {
     const notifications = getNotifications();
     badge.textContent = String(notifications.length);
     badge.hidden = notifications.length === 0;
-// Shows empty state if there are no notifications
+    // Shows empty state if there are no notifications
     if (!notifications.length) {
       panel.innerHTML = `
         <div class="notification-header">
@@ -442,7 +442,7 @@ window.app = (() => {
       `;
       return;
     }
-// Renders the list of notifications
+    // Renders the list of notifications
     panel.innerHTML = `
       <div class="notification-header">
         <strong>Notifications</strong>
@@ -450,7 +450,7 @@ window.app = (() => {
       </div>
       <div class="notification-list">
         ${notifications
-          .map(item => `
+        .map(item => `
             <div class="notification-item">
               <i class="ph ${iconForType(item.type)}"></i>
               <div class="notification-copy">
@@ -459,7 +459,7 @@ window.app = (() => {
               </div>
             </div>
           `)
-          .join('')}
+        .join('')}
       </div>
     `;
 
@@ -471,8 +471,8 @@ window.app = (() => {
       });
     }
   }
-// Initializes the notification center with click handlers
-  function  InitializeNotificationsCenter() {
+  // Initializes the notification center with click handlers
+  function InitializeNotificationsCenter() {
     const { trigger, panel } = ensureNotificationsPanel();
     if (!trigger || !panel) return;
 
