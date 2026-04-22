@@ -72,7 +72,7 @@ window.app = (() => {
       target.tagName === 'TEXTAREA' ||
       target.isContentEditable
     );
-    if (isTypingField && event.key.toLowerCase() !== 'b') return;
+    if (isTypingField && event.key.toLowerCase() !== 'b' && event.key.toLowerCase() !== 'n') return;
 
     const key = event.key.toLowerCase();
 
@@ -88,6 +88,12 @@ window.app = (() => {
       event.preventDefault();
       searchInput.focus();
       searchInput.select();
+      return;
+    }
+
+    if (key === 'n') {
+      event.preventDefault();
+      Forms.openIssueForm();
     }
   }
 
@@ -108,7 +114,7 @@ window.app = (() => {
     toolkit.style.fontSize = '12px';
     toolkit.style.fontWeight = '600';
     toolkit.style.whiteSpace = 'nowrap';
-    toolkit.innerHTML = '<span>Find: Ctrl/Cmd + F</span><span>Sidebar: Ctrl/Cmd + B</span>';
+    toolkit.innerHTML = '<i class="ph ph-toolbox" aria-hidden="true"></i><span>Find: Ctrl/Cmd + F</span><span>Sidebar: Ctrl/Cmd + B</span><span>New Bug: Ctrl/Cmd + N</span>';
 
     const topBarRight = document.querySelector('.top-bar-right');
     if (topBarRight) {
