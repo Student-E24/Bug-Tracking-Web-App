@@ -19,6 +19,12 @@ window.app = (() => {
     notificationsEnabled: true,
   };
 
+  /*
+   * =========================================
+   * App startup, shared actions, and sidebar
+   * =========================================
+   */
+
   function init() {
     activePage = document.body.dataset.page || 'dashboard';
 
@@ -92,6 +98,12 @@ window.app = (() => {
     const collapsed = layout.classList.toggle('sidebar-collapsed');
     localStorage.setItem(SIDEBAR_STATE_KEY, collapsed ? '1' : '0');
   }
+
+  /*
+   * =========================================
+   * Issue filters and filter panel behavior
+   * =========================================
+   */
 
   function getFilters() {
     try {
@@ -255,6 +267,13 @@ window.app = (() => {
     trigger.dataset.bound = 'true';
     renderFilterPanel();
   }
+
+    /*
+   * =========================================
+   * Settings, notifications, rendering, refresh
+   * =========================================
+   */
+
 // Retrieves user settings from localStorage with fallback defaults
   function loadUserSettings() {
     try {
