@@ -56,6 +56,70 @@ body {
     overflow: hidden; /* Prevent body scroll, layout handles it */
 }
 
+
+.login-page {
+    overflow: auto;
+    min-height: 100vh;
+    background:
+        radial-gradient(1000px 420px at 10% -10%, rgba(59, 130, 246, 0.15), transparent),
+        radial-gradient(900px 360px at 110% -20%, rgba(139, 92, 246, 0.14), transparent),
+        var(--bg-app);
+}
+
+.login-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.45);
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.login-brand i {
+    font-size: 22px;
+}
+
+.login-card h1 {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.login-subtitle {
+    margin: 0 0 18px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.login-error {
+    margin: 0;
+    color: #fca5a5;
+    font-size: 13px;
+}
+
 .notification-trigger {
     position: relative;
 }

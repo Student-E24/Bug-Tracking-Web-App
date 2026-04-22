@@ -22,6 +22,8 @@ window.app = (() => {
   function init() {
     activePage = document.body.dataset.page || 'dashboard';
 
+    if (!Auth.requireAuth()) return;
+
     Seed.run();
     Issues.checkOverdue();
 
@@ -40,6 +42,11 @@ window.app = (() => {
     const newIssueButton = document.getElementById('btn-new-issue');
     if (newIssueButton) {
       newIssueButton.addEventListener('click', () => Forms.openIssueForm());
+    }
+
+    const logoutButton = document.getElementById('btn-logout');
+    if (logoutButton) {
+      logoutButton.addEventListener('click', () => Auth.logout());
     }
 
     wireNotificationsCenter();
@@ -110,9 +117,14 @@ window.app = (() => {
     return merged;
   }
 
+<<<<<<< HEAD
   function countActiveFilters(filters) {
     return [filters.status, filters.priority, filters.projectId].filter(Boolean).length + (filters.overdueOnly ? 1 : 0);
   }
+=======
+
+  })();
+>>>>>>> 92303e0d559a9e6de778937e243d14f8a7c03e24
 
   function applyIssueFilters(issues) {
     const filters = getFilters();
