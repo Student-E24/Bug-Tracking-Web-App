@@ -57,6 +57,7 @@ window.app = (() => {
 
     wireNotificationsCenter();
     wireFilterPanel();
+    renderShortcutToolkit();
 
     document.addEventListener('keydown', handleShortcuts);
   }
@@ -64,6 +65,14 @@ window.app = (() => {
   function handleShortcuts(event) {
     const modifier = event.ctrlKey || event.metaKey;
     if (!modifier) return;
+
+    const target = event.target;
+    const isTypingField = target && (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable
+    );
+    if (isTypingField && event.key.toLowerCase() !== 'b') return;
 
     const key = event.key.toLowerCase();
 
@@ -80,6 +89,40 @@ window.app = (() => {
       searchInput.focus();
       searchInput.select();
     }
+  }
+
+  function renderShortcutToolkit() {
+    if (document.getElementById('shortcut-toolkit')) return;
+
+    const toolkit = document.createElement('div');
+    toolkit.id = 'shortcut-toolkit';
+    toolkit.setAttribute('aria-label', 'Keyboard shortcuts');
+    toolkit.style.display = 'inline-flex';
+    toolkit.style.alignItems = 'center';
+    toolkit.style.gap = '10px';
+    toolkit.style.padding = '6px 10px';
+    toolkit.style.borderRadius = '999px';
+    toolkit.style.border = '1px solid #dbe4ff';
+    toolkit.style.background = '#eef4ff';
+    toolkit.style.color = '#0f172a';
+    toolkit.style.fontSize = '12px';
+    toolkit.style.fontWeight = '600';
+    toolkit.style.whiteSpace = 'nowrap';
+    toolkit.innerHTML = '<span>Find: Ctrl/Cmd + F</span><span>Sidebar: Ctrl/Cmd + B</span>';
+
+    const topBarRight = document.querySelector('.top-bar-right');
+    if (topBarRight) {
+      topBarRight.prepend(toolkit);
+      return;
+    }
+
+    // Fallback if top bar is not present.
+    toolkit.style.position = 'fixed';
+    toolkit.style.right = '16px';
+    toolkit.style.bottom = '16px';
+    toolkit.style.zIndex = '999';
+    toolkit.style.boxShadow = '0 8px 24px rgba(2, 6, 23, 0.25)';
+    document.body.appendChild(toolkit);
   }
 
   function applySavedSidebarState() {
@@ -268,6 +311,10 @@ window.app = (() => {
     renderFilterPanel();
   }
 
+  function wireFilterPanel() {
+    setupFilterPanel();
+  }
+
     /*
    * =========================================
    * Settings, notifications, rendering, refresh
@@ -367,6 +414,10 @@ window.app = (() => {
 
     return { trigger, panel, badge };
   }
+
+  function ensureNotificationsPanel() {
+    return setupNotificationsPanel();
+  }
 // Renders the notifications panel UI with the current notifications
   function renderNotificationsPanel() {
     const { panel, badge } = ensureNotificationsPanel();
@@ -436,6 +487,18 @@ window.app = (() => {
 
     trigger.dataset.bound = 'true';
     renderNotificationsPanel();
+  }
+
+  function wireNotificationsCenter() {
+    InitializeNotificationsCenter();
+  }
+
+  function getSettings() {
+    return loadUserSettings();
+  }
+
+  function saveSettings(nextSettings) {
+    return StoreUserSettings(nextSettings);
   }
 
   function notify(message, type = 'success') {
