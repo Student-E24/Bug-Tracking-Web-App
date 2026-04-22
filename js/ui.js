@@ -195,7 +195,6 @@ window.UI = (() => {
                               <div class="issue-date">${escapeHtml(formatDate(issue.targetDate))}</div>
                               <div class="issue-comments"><i class="ph ph-chat-circle"></i>0</div>
                             </div>
-                          </div>
                         </article>
                       `;
                     })
