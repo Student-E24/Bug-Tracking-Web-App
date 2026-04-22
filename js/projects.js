@@ -1,6 +1,6 @@
 
-// projects.js – Project logic
 
+// Handles CRUD operations and UI helpers for project entities
 const Projects = (() => {
   const COLLECTION = 'projects';
 
@@ -19,14 +19,14 @@ const Projects = (() => {
   /* ── Helpers ─────────────────────────────────────────────── */
   function getName(id) {
     const p = get(id);
-    return p ? p.name : '—';
+    return p ? p.name : '—'; //Retrieves a project's display name by its ID.
   }
-
+// Generates HTML for a colored dot representing a project.
   function colorDot(project) {
     const color = project ? project.color : '#ccc';
     return `<span class="project-dot" style="background:${color}"></span>`;
   }
-
+// Selects a random color from the predefined palette.
   function randomColor() {
     return PALETTE[Math.floor(Math.random() * PALETTE.length)];
   }

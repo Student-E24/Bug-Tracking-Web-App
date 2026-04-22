@@ -513,22 +513,22 @@ window.app = (() => {
   function renderPage(searchTerm = '') {
     const view = document.getElementById('view-container');
     if (!view) return;
-
+  // Fetch and filter data based on current state
     const issues = searchTerm ? Issues.search(searchTerm) : Issues.getAll();
     const filteredIssues = applyIssueFilters(issues);
     const people = People.getAll();
     const projects = Projects.getAll();
-
+// Render global UI components that appear across multiple pages
     renderFilterPanel();
     UI.renderSidebarProjects(projects);
-
+// Each active page has its own rendering logic and event wiring
     if (activePage === 'dashboard') {
       view.innerHTML = UI.renderDashboard(filteredIssues);
       UI.wireDashboardActions(view);
       return;
     }
 
-    if (activePage === 'issues') {
+    if (activePage === 'issues') { // Apply project filtering if specified in URL query parameters
       const params = new URLSearchParams(window.location.search);
       const project = params.get('project');
       const filtered = project ? filteredIssues.filter(issue => issue.projectId === project) : filteredIssues;
@@ -556,6 +556,7 @@ window.app = (() => {
       return;
     }
 
+  // "New Project" button
     if (activePage === 'projects') {
       view.innerHTML = UI.renderProjects(projects, issues);
       const newProjectButton = document.getElementById('btn-new-project');
@@ -567,12 +568,12 @@ window.app = (() => {
         onDeleteProject: projectId => {
           const project = Projects.get(projectId);
           if (!project) return;
-
+          // Check for linked issues before deletion
           const linkedIssues = Issues.getAll().filter(issue => issue.projectId === projectId);
           const warning = linkedIssues.length
             ? `Delete project "${project.name}"? ${linkedIssues.length} linked issue(s) will be unassigned.`
             : `Delete project "${project.name}"?`;
-
+          
           Forms.confirmDelete('Delete Project', warning, () => {
             linkedIssues.forEach(issue => {
               Issues.update(issue.id, { projectId: '' });
@@ -588,7 +589,7 @@ window.app = (() => {
     }
 
     if (activePage === 'people') {
-      view.innerHTML = UI.renderPeople(people, issues);
+      view.innerHTML = UI.renderPeople(people, issues); // "Add Person" button
       const newPersonButton = document.getElementById('btn-new-person');
       if (newPersonButton) {
         newPersonButton.addEventListener('click', () => Forms.openPersonForm());
@@ -598,14 +599,14 @@ window.app = (() => {
         onDeletePerson: personId => {
           const person = People.get(personId);
           if (!person) return;
-
+      // Check for assigned issues before deletion
           const assignedIssues = Issues.getAll().filter(issue => issue.assigneeId === personId);
           const warning = assignedIssues.length
             ? `Delete person "${person.name}"? ${assignedIssues.length} assigned issue(s) will become unassigned.`
             : `Delete person "${person.name}"?`;
 
           Forms.confirmDelete('Delete Person', warning, () => {
-            assignedIssues.forEach(issue => {
+            assignedIssues.forEach(issue => { // Unassign issues rather than deleting them
               Issues.update(issue.id, { assigneeId: '' });
             });
 
@@ -628,13 +629,13 @@ window.app = (() => {
           if (saved.notificationsEnabled) {
             notify('Settings saved', 'success');
           }
-          renderPage();
+          renderPage();// Re-render to apply theme/layout changes
         },
         onReset: () => {
           saveSettings(DEFAULT_SETTINGS);
           applySettingsToSidebar();
           notify('Settings reset to defaults', 'info');
-          renderPage();
+          renderPage();  // Re-render with default settings
         },
       });
     }
