@@ -547,7 +547,18 @@ window.app = (() => {
           ${UI.renderIssuesTable(filtered)}
         </section>
       `;
-      UI.wireIssueTableActions(view);
+      UI.wireIssueTableActions(view, {
+        onDeleteIssue: issueId => {
+          const issue = Issues.get(issueId);
+          if (!issue) return;
+
+          if (!window.confirm(`Delete issue "${issue.id}"? This cannot be undone.`)) return;
+
+          Issues.remove(issueId);
+          notify(`Issue ${issue.id} deleted`, 'info');
+          refresh();
+        }
+      });
       return;
     }
 

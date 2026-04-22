@@ -20,6 +20,11 @@ const People = (() => {
   function remove(id)        { return Storage.remove(COLLECTION, id); }
 
   /* ── Helpers ─────────────────────────────────────────────── */
+  function fullName(person) {
+    if (!person) return '';
+    return [person.name, person.surname].filter(Boolean).join(' ');
+  }
+
   function initials(name) {
     return (name || '')
       .split(' ')
@@ -29,19 +34,22 @@ const People = (() => {
       .join('');
   }
 
-  function avatarHtml(person) {
-    const text = person ? initials(person.name) : '?';
-    return `<span class="avatar-circle">${text}</span>`;
+  function avatarHtml(person, size = 32) {
+    if (person && person.profilePicture) {
+      return `<img class="avatar-img" src="${person.profilePicture}" alt="${fullName(person)}" style="width:${size}px;height:${size}px;" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'avatar-circle',style:'width:${size}px;height:${size}px;',textContent:'${initials(fullName(person)) || '?'}'}))">`;
+    }
+    const text = person ? (initials(fullName(person)) || '?') : '?';
+    return `<span class="avatar-circle" style="width:${size}px;height:${size}px;">${text}</span>`;
   }
 
   function getName(id) {
     const p = get(id);
-    return p ? p.name : '—';
+    return p ? fullName(p) || p.name : '—';
   }
 
   function roleMeta(id) {
     return ROLES.find(r => r.id === id) || { id, label: id };
   }
 
-  return { getAll, get, create, update, remove, initials, avatarHtml, getName, roleMeta, ROLES };
+  return { getAll, get, create, update, remove, initials, avatarHtml, fullName, getName, roleMeta, ROLES };
 })();

@@ -60,6 +60,24 @@ window.Forms = (() => {
     document.addEventListener('keydown', escHandler);
   }
 
+  function confirmDelete(title, message, onConfirm) {
+    const body = `<p style="font-size: 15px; color: var(--text-secondary);">${UI.escapeHtml(message)}</p>`;
+    const footer = `
+      <button type="button" class="btn btn-outline" id="btn-cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="btn-confirm-delete" style="background-color: var(--status-overdue-bg); color: var(--status-overdue-color); border: 1px solid var(--status-overdue-color);">Delete</button>
+    `;
+    
+    openModal(title, body, footer);
+    
+    const confirmBtn = document.getElementById('btn-confirm-delete');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        closeModal();
+        onConfirm();
+      });
+    }
+  }
+
   // Handles Escape key presses to close the currently open modal.
   // This gives users a quick keyboard shortcut for dismissing dialogs.
   function escHandler(event) {
@@ -286,28 +304,52 @@ window.Forms = (() => {
   }
 
   // Builds and opens the team member form for adding a new person.
-  // This keeps user creation focused on the required profile fields.
+  // Includes surname, username (unique), role, and optional profile picture URL.
   function openPersonForm() {
     const roleOptions = People.ROLES
       .map(role => `<option value="${role.id}">${role.label}</option>`)
       .join('');
 
     const body = `
-      <div class="form-group">
-        <label>Full Name *</label>
-        <input class="form-input" name="name" required>
-      </div>
-      <div class="form-group">
-        <label>Email *</label>
-        <input type="email" class="form-input" name="email" required>
-      </div>
-      <div class="form-group">
-        <label>Role *</label>
-        <select class="form-select" name="role" required>${roleOptions}</select>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>First Name *</label>
+          <input class="form-input" name="name" required>
+        </div>
+        <div class="form-group">
+          <label>Surname *</label>
+          <input class="form-input" name="surname" required>
+        </div>
+        <div class="form-group">
+          <label>Username *</label>
+          <input class="form-input" name="username" required placeholder="e.g. janedoe">
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" class="form-input" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Role *</label>
+          <select class="form-select" name="role" required>${roleOptions}</select>
+        </div>
+        <div class="form-group">
+          <label>Profile Picture URL</label>
+          <input type="url" class="form-input" name="profilePicture" placeholder="https://...">
+        </div>
       </div>
     `;
 
     openModal('Add Team Member', body, '', data => {
+      // Validate username uniqueness
+      const existingUsernames = People.getAll().map(p => (p.username || '').toLowerCase());
+      if (existingUsernames.includes((data.username || '').trim().toLowerCase())) {
+        window.alert(`Username "${data.username.trim()}" is already taken. Please choose a different one.`);
+        return;
+      }
+
+      data.username = (data.username || '').trim().toLowerCase();
+      data.profilePicture = (data.profilePicture || '').trim();
+
       People.create(data);
       app.notify('Team member added', 'success');
       closeModal();
@@ -320,6 +362,7 @@ window.Forms = (() => {
     openIssueDetail,
     openProjectForm,
     openPersonForm,
+    confirmDelete,
     closeModal,
   };
 })();

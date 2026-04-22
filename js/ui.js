@@ -99,11 +99,10 @@ window.UI = (() => {
     };
   }
 
-  // Builds a short initials label for a person avatar.
-  // This ensures a fallback avatar value is always available.
+  // Builds initials from a person's full name (first + surname).
   function personInitials(person) {
-    if (!person || !person.name) return '?';
-    return People.initials(person.name).slice(0, 2) || '?';
+    if (!person) return '?';
+    return People.initials(People.fullName(person)).slice(0, 2) || '?';
   }
 
   // Renders the top dashboard metric cards from status counts.
@@ -190,7 +189,7 @@ window.UI = (() => {
                             </div>
                             <div class="issue-footer">
                               <div class="table-assignee">
-                                <div class="avatar bg-purple">${escapeHtml(personInitials(assignee))}</div>
+                                ${People.avatarHtml(assignee, 28)}
                               </div>
                               <div class="issue-date">${escapeHtml(formatDate(issue.targetDate))}</div>
                               <div class="issue-comments"><i class="ph ph-chat-circle"></i>0</div>
@@ -272,6 +271,7 @@ window.UI = (() => {
                         <td>
                         <button class="btn btn-outline btn-sm" data-action="view" data-issue-id="${issue.id}">View</button>
                         <button class="btn btn-primary btn-sm" data-action="edit" data-issue-id="${issue.id}">Edit</button>
+                        <button class="btn btn-outline btn-sm border-danger" style="color:var(--status-overdue-color);" data-action="delete-issue" data-issue-id="${issue.id}">Delete</button>
                       </td>
                     </tr>
                   `;
@@ -337,13 +337,16 @@ window.UI = (() => {
           ${people
             .map(person => {
               const assigned = issues.filter(issue => issue.assigneeId === person.id);
+              const displayName = People.fullName(person) || person.name;
+              const username = person.username ? `<span class="person-username">@${escapeHtml(person.username)}</span>` : '';
               return `
                 <article class="person-card">
                   <div class="person-card-header">
-                    <div class="avatar bg-purple">${escapeHtml(People.initials(person.name || '?'))}</div>
+                    ${People.avatarHtml(person, 40)}
                     <div class="person-info">
-                      <h3>${escapeHtml(person.name)}</h3>
-                      <span class="person-username">${escapeHtml(People.roleMeta(person.role).label)}</span>
+                      <h3>${escapeHtml(displayName)}</h3>
+                      <span class="person-role">${escapeHtml(People.roleMeta(person.role).label)}</span>
+                      ${username}
                     </div>
                   </div>
                   <div class="person-email">${escapeHtml(person.email || '')}</div>
@@ -372,20 +375,29 @@ window.UI = (() => {
   // Wires delete actions for project and person management buttons.
   // This connects UI interactions to the provided page handlers.
   function wireManagementActions(root, handlers = {}) {
+    console.log('Wiring management actions with handlers:', Object.keys(handlers));
     root.querySelectorAll('[data-action="delete-project"]').forEach(button => {
       button.addEventListener('click', event => {
+        console.log('Project delete clicked:', button.dataset.projectId);
         event.preventDefault();
+        event.stopPropagation();
         if (handlers.onDeleteProject) {
           handlers.onDeleteProject(button.dataset.projectId);
+        } else {
+          console.log('No handler for onDeleteProject');
         }
       });
     });
 
     root.querySelectorAll('[data-action="delete-person"]').forEach(button => {
       button.addEventListener('click', event => {
+        console.log('Person delete clicked:', button.dataset.personId);
         event.preventDefault();
+        event.stopPropagation();
         if (handlers.onDeletePerson) {
           handlers.onDeletePerson(button.dataset.personId);
+        } else {
+          console.log('No handler for onDeletePerson');
         }
       });
     });
@@ -467,10 +479,11 @@ window.UI = (() => {
 
   // Wires view and edit actions in issue table rows.
   // This opens the corresponding modal based on user clicks.
-  function wireIssueTableActions(root) {
+  function wireIssueTableActions(root, handlers = {}) {
     root.querySelectorAll('[data-action="view"]').forEach(button => {
       button.addEventListener('click', event => {
         event.preventDefault();
+        event.stopPropagation();
         Forms.openIssueDetail(button.dataset.issueId);
       });
     });
@@ -478,7 +491,18 @@ window.UI = (() => {
     root.querySelectorAll('[data-action="edit"]').forEach(button => {
       button.addEventListener('click', event => {
         event.preventDefault();
+        event.stopPropagation();
         Forms.openIssueForm(button.dataset.issueId);
+      });
+    });
+
+    root.querySelectorAll('[data-action="delete-issue"]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (handlers.onDeleteIssue) {
+          handlers.onDeleteIssue(button.dataset.issueId);
+        }
       });
     });
   }
