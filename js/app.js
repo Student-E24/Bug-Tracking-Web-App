@@ -197,7 +197,7 @@ window.app = (() => {
       return true;
     });
   }
-
+// Creates the filter panel element if it doesn't already exist in the DOM
   function ensureFilterPanel() {
     const trigger = document.getElementById('btn-filter');
     if (!trigger) return { trigger: null, panel: null };
@@ -215,7 +215,7 @@ window.app = (() => {
 
     return { trigger, panel };
   }
-
+// Displays status, priority, project filters and an overdue-only checkbox
   function renderFilterPanel() {
     const { trigger, panel } = ensureFilterPanel();
     if (!trigger || !panel) return;
@@ -316,18 +316,12 @@ window.app = (() => {
     trigger.dataset.bound = 'true';
     renderFilterPanel();
   }
-
+//Wrapper function that calls setupFilterPanel()
   function wireFilterPanel() {
     setupFilterPanel();
   }
 
-  /*
- * =========================================
- * Settings, notifications, rendering, refresh
- * =========================================
- */
-
-  // Retrieves user settings from localStorage with fallback defaults
+  // Retrieves user settings from localStorage with fallback defaults, Handels JSON parsing errors
   function loadUserSettings() {
     try {
       const raw = localStorage.getItem(SETTINGS_KEY);
@@ -341,7 +335,7 @@ window.app = (() => {
       return { ...DEFAULT_SETTINGS };
     }
   }
-  // Saves user settings to localStorage
+  // Saves user settings to localStorage with validation and defaults
   function StoreUserSettings(nextSettings) {
     const merged = {
       ...DEFAULT_SETTINGS,
@@ -351,7 +345,7 @@ window.app = (() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
     return merged;
   }
-  // Updates sidebar UI elements with current user settings (name, email, avatar)
+  // Updates sidebar UI elements with current user settings
   function applySettingsToSidebar() {
     const settings = getSettings();
 
