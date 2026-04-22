@@ -1,10 +1,12 @@
 window.app = (() => {
+  window.app = (() => {
   let activePage = 'dashboard';
-  const SIDEBAR_STATE_KEY = 'submission_sidebar_collapsed';
-  const NOTIFICATIONS_KEY = 'submission_notifications';
-  const SETTINGS_KEY = 'submission_settings';
-  const FILTERS_KEY = 'submission_issue_filters';
-  const MAX_NOTIFICATIONS = 30;
+  const SIDEBAR_STATE_KEY = 'submission_sidebar_collapsed';  // Key for sidebar state
+  const NOTIFICATIONS_KEY = 'submission_notifications';      // Key for notifications
+  const SETTINGS_KEY = 'submission_settings';      // Key for settings
+  const FILTERS_KEY = 'submission_issue_filters';  // Key for filters
+  const MAX_NOTIFICATIONS = 30;   // Max notifications allowed
+
   const DEFAULT_FILTERS = {
     status: '',
     priority: '',
@@ -19,47 +21,45 @@ window.app = (() => {
     notificationsEnabled: true,
   };
 
-  /*
-   * =========================================
+  /* =========================================
    * App startup, shared actions, and sidebar
-   * =========================================
-   */
+     =========================================*/
 
   function init() {
-    activePage = document.body.dataset.page || 'dashboard';
+    activePage = document.body.dataset.page || 'dashboard';            // Get current page
 
     if (!Auth.requireAuth()) return;
 
-    Storage.ensureCollections(['issues', 'people', 'projects']);
-    Issues.checkOverdue();
+    Storage.ensureCollections(['issues', 'people', 'projects']);   // Ensure data exists
+    Issues.checkOverdue();  // Check overdue issues
 
-    applySettingsToSidebar();
-    applySavedSidebarState();
-    wireSharedActions();
-    renderPage();
+    applySettingsToSidebar();  // Apply settings UI
+    applySavedSidebarState();   //Load sidebar state
+    wireSharedActions();  // Add event listeners
+    renderPage();  // Display page
   }
 
   function wireSharedActions() {
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
-      searchInput.addEventListener('input', () => renderPage(searchInput.value));
+      searchInput.addEventListener('input', () => renderPage(searchInput.value));  // Search as typing
     }
 
     const newIssueButton = document.getElementById('btn-new-issue');
     if (newIssueButton) {
-      newIssueButton.addEventListener('click', () => Forms.openIssueForm());
+      newIssueButton.addEventListener('click', () => Forms.openIssueForm());  // Open form
     }
 
     const logoutButton = document.getElementById('btn-logout');
     if (logoutButton) {
-      logoutButton.addEventListener('click', () => Auth.logout());
+      logoutButton.addEventListener('click', () => Auth.logout());  // Logout user
     }
 
-    wireNotificationsCenter();
-    wireFilterPanel();
-    renderShortcutToolkit();
+    wireNotificationsCenter();// Setup notifications
+    wireFilterPanel();// Setup filters
+    renderShortcutToolkit();  // Show shortcuts
 
-    document.addEventListener('keydown', handleShortcuts);
+    document.addEventListener('keydown', handleShortcuts);  // Keyboard shortcuts
   }
 
   function handleShortcuts(event) {
@@ -78,7 +78,7 @@ window.app = (() => {
 
     if (key === 'b') {
       event.preventDefault();
-      toggleSidebar();
+      toggleSidebar(); // Toggle sidebar
       return;
     }
 
@@ -86,21 +86,21 @@ window.app = (() => {
       const searchInput = document.getElementById('search-input');
       if (!searchInput) return;
       event.preventDefault();
-      searchInput.focus();
+      searchInput.focus();  // Focus search
       searchInput.select();
       return;
     }
 
     if (key === 'm') {
       event.preventDefault();
-      Forms.openIssueForm();
+      Forms.openIssueForm();   // Open new issue form
     }
   }
 
   function renderShortcutToolkit() {
     if (document.getElementById('shortcut-toolkit')) return;
 
-    const toolkit = document.createElement('div');
+    const toolkit = document.createElement('div');  // Create UI element
     toolkit.id = 'shortcut-toolkit';
     toolkit.setAttribute('aria-label', 'Keyboard shortcuts');
     toolkit.style.display = 'inline-flex';
@@ -128,15 +128,15 @@ window.app = (() => {
     toolkit.style.bottom = '16px';
     toolkit.style.zIndex = '999';
     toolkit.style.boxShadow = '0 8px 24px rgba(2, 6, 23, 0.25)';
-    document.body.appendChild(toolkit);
+    document.body.appendChild(toolkit);  // Add to page
   }
-
+ // Load sidebar state
   function applySavedSidebarState() {
     const layout = document.querySelector('.app-layout');
     if (!layout) return;
 
     if (localStorage.getItem(SIDEBAR_STATE_KEY) === '1') {
-      layout.classList.add('sidebar-collapsed');
+      layout.classList.add('sidebar-collapsed'); // Collapse sidebar
     }
   }
 
@@ -144,16 +144,16 @@ window.app = (() => {
     const layout = document.querySelector('.app-layout');
     if (!layout) return;
 
-    const collapsed = layout.classList.toggle('sidebar-collapsed');
-    localStorage.setItem(SIDEBAR_STATE_KEY, collapsed ? '1' : '0');
+    const collapsed = layout.classList.toggle('sidebar-collapsed');  // Toggle class
+    localStorage.setItem(SIDEBAR_STATE_KEY, collapsed ? '1' : '0'); // Save state
   }
 
-  /*
-   * =========================================
+  
+   /*=========================================
    * Issue filters and filter panel behavior
-   * =========================================
-   */
-
+   * =========================================*/
+  
+// Get filters from storage
   function getFilters() {
     try {
       const raw = localStorage.getItem(FILTERS_KEY);
@@ -164,7 +164,7 @@ window.app = (() => {
         overdueOnly: Boolean(parsed?.overdueOnly),
       };
     } catch (error) {
-      return { ...DEFAULT_FILTERS };
+      return { ...DEFAULT_FILTERS }; // Return default if error
     }
   }
 
@@ -174,7 +174,7 @@ window.app = (() => {
       ...nextFilters,
       overdueOnly: Boolean(nextFilters.overdueOnly),
     };
-    localStorage.setItem(FILTERS_KEY, JSON.stringify(merged));
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(merged)); // Save to storage
     return merged;
   }
 
@@ -184,7 +184,7 @@ window.app = (() => {
 
   function applyIssueFilters(issues) {
     const filters = getFilters();
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];  // Today date
 
     return issues.filter(issue => {
       if (filters.status && issue.status !== filters.status) return false;
