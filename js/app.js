@@ -552,11 +552,11 @@ window.app = (() => {
           const issue = Issues.get(issueId);
           if (!issue) return;
 
-          if (!window.confirm(`Delete issue "${issue.id}"? This cannot be undone.`)) return;
-
-          Issues.remove(issueId);
-          notify(`Issue ${issue.id} deleted`, 'info');
-          refresh();
+          Forms.confirmDelete('Delete Issue', `Delete issue "${issue.id}"? This cannot be undone.`, () => {
+            Issues.remove(issueId);
+            notify(`Issue ${issue.id} deleted`, 'info');
+            refresh();
+          });
         }
       });
       return;
@@ -579,15 +579,15 @@ window.app = (() => {
             ? `Delete project "${project.name}"? ${linkedIssues.length} linked issue(s) will be unassigned.`
             : `Delete project "${project.name}"?`;
 
-          if (!window.confirm(warning)) return;
+          Forms.confirmDelete('Delete Project', warning, () => {
+            linkedIssues.forEach(issue => {
+              Issues.update(issue.id, { projectId: '' });
+            });
 
-          linkedIssues.forEach(issue => {
-            Issues.update(issue.id, { projectId: '' });
+            Projects.remove(projectId);
+            notify(`Project "${project.name}" deleted`, 'info');
+            refresh();
           });
-
-          Projects.remove(projectId);
-          notify(`Project "${project.name}" deleted`, 'info');
-          refresh();
         },
       });
       return;
@@ -610,15 +610,15 @@ window.app = (() => {
             ? `Delete person "${person.name}"? ${assignedIssues.length} assigned issue(s) will become unassigned.`
             : `Delete person "${person.name}"?`;
 
-          if (!window.confirm(warning)) return;
+          Forms.confirmDelete('Delete Person', warning, () => {
+            assignedIssues.forEach(issue => {
+              Issues.update(issue.id, { assigneeId: '' });
+            });
 
-          assignedIssues.forEach(issue => {
-            Issues.update(issue.id, { assigneeId: '' });
+            People.remove(personId);
+            notify(`Person "${person.name}" deleted`, 'info');
+            refresh();
           });
-
-          People.remove(personId);
-          notify(`Person "${person.name}" deleted`, 'info');
-          refresh();
         },
       });
       return;
