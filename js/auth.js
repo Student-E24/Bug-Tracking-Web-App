@@ -2,6 +2,7 @@ window.Auth = (() => {
   const SESSION_KEY = 'submission_auth_session';
   const LOGIN_PAGE = 'login.html';
   const HOME_PAGE = 'index.html';
+  //username and password.
   const ADMIN_USERNAME = 'Mieg';
   const ADMIN_PASSWORD = 'TheGamer';
 
