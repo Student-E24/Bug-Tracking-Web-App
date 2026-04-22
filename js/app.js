@@ -22,6 +22,8 @@ window.app = (() => {
   function init() {
     activePage = document.body.dataset.page || 'dashboard';
 
+    if (!Auth.requireAuth()) return;
+
     Seed.run();
     Issues.checkOverdue();
 
@@ -40,6 +42,11 @@ window.app = (() => {
     const newIssueButton = document.getElementById('btn-new-issue');
     if (newIssueButton) {
       newIssueButton.addEventListener('click', () => Forms.openIssueForm());
+    }
+
+    const logoutButton = document.getElementById('btn-logout');
+    if (logoutButton) {
+      logoutButton.addEventListener('click', () => Auth.logout());
     }
 
     wireNotificationsCenter();
@@ -90,7 +97,7 @@ window.app = (() => {
 
   //person 3 add your code here. and after delete the comment.
 
-  
+
   })();
 
 document.addEventListener('DOMContentLoaded', app.init);
